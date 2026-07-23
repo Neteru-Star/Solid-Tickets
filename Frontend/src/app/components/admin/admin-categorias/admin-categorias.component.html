@@ -1,0 +1,75 @@
+<div class="page">
+  <header class="page-header">
+    <div class="header-text">
+      <div class="eyebrow">
+        <span class="eyebrow-dot"></span>
+        Configuración
+      </div>
+      <h1>Categorías</h1>
+      <p class="subtitle">Define cómo se clasifican los tickets del sistema</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Form card -->
+    <div class="card form-card">
+      <div class="card-icon-top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+      <div class="card-title">Nueva categoría</div>
+      <p class="card-sub">Las categorías ayudan a organizar y filtrar los tickets entrantes</p>
+
+      <div class="form-group">
+        <label>Nombre de la categoría</label>
+        <input type="text" [(ngModel)]="nuevaCategoria"
+               (keyup.enter)="crearCategoria()"
+               placeholder="Ej: Soporte técnico, RR.HH., Infraestructura..."/>
+      </div>
+
+      <button (click)="crearCategoria()" class="btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Crear categoría</span>
+      </button>
+
+      <div class="alert success" *ngIf="mensaje">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ mensaje }}
+      </div>
+      <div class="alert danger" *ngIf="error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ error }}
+      </div>
+    </div>
+
+    <!-- List card -->
+    <div class="card list-card">
+      <div class="list-head">
+        <div>
+          <div class="card-title">Categorías existentes</div>
+          <p class="card-sub">{{ categorias.length }} {{ categorias.length === 1 ? 'categoría' : 'categorías' }}</p>
+        </div>
+        <span class="count-pill">{{ categorias.length }}</span>
+      </div>
+
+      <div *ngIf="cargando" class="loading-list">
+        <div class="skeleton sk-item" *ngFor="let i of [1,2,3,4]"></div>
+      </div>
+
+      <div class="lista-categorias" *ngIf="!cargando">
+        <div class="categoria-item" *ngFor="let cat of categorias; let i = index" [style.animation-delay.ms]="i * 50">
+          <div class="cat-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          </div>
+          <div class="cat-content">
+            <span class="cat-nombre">{{ cat.nombre }}</span>
+            <span class="cat-meta">Categoría #{{ cat.id }}</span>
+          </div>
+        </div>
+        <div *ngIf="categorias.length === 0" class="empty-list">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="36" height="36"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <p>Aún no hay categorías. Crea la primera.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

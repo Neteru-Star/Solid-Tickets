@@ -1,0 +1,136 @@
+<div class="page">
+  <header class="page-header">
+    <div class="page-title">
+      <span class="eyebrow"><span class="dot"></span>Mis solicitudes</span>
+      <h1>Mis Tickets</h1>
+      <p class="subtitle">Gestiona y da seguimiento a tus solicitudes</p>
+    </div>
+    <a routerLink="/dashboard/tickets/nuevo" class="btn-nuevo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Nuevo Ticket
+    </a>
+  </header>
+
+  <section class="stats-row">
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-icon azul">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="8" y1="13" x2="16" y2="13"/>
+            <line x1="8" y1="17" x2="14" y2="17"/>
+          </svg>
+        </span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="stat-numero">{{ tickets.length }}</div>
+      <div class="stat-bar"><span class="stat-bar-fill azul" style="width:100%"></span></div>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-icon amarillo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+            <polyline points="21 3 21 8 16 8"/>
+          </svg>
+        </span>
+        <span class="stat-label">En Proceso</span>
+      </div>
+      <div class="stat-numero">{{ tickets | ticketFilter:'EN_PROCESO' }}</div>
+      <div class="stat-bar"><span class="stat-bar-fill amarillo" [style.width.%]="getPercent('EN_PROCESO')"></span></div>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-icon verde">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </span>
+        <span class="stat-label">Resueltos</span>
+      </div>
+      <div class="stat-numero">{{ tickets | ticketFilter:'RESUELTO' }}</div>
+      <div class="stat-bar"><span class="stat-bar-fill verde" [style.width.%]="getPercent('RESUELTO')"></span></div>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-icon rojo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </span>
+        <span class="stat-label">Abiertos</span>
+      </div>
+      <div class="stat-numero">{{ tickets | ticketFilter:'ABIERTO' }}</div>
+      <div class="stat-bar"><span class="stat-bar-fill rojo" [style.width.%]="getPercent('ABIERTO')"></span></div>
+    </article>
+  </section>
+
+  <!-- Loading skeleton -->
+  <div *ngIf="cargando" class="tabla-container">
+    <div class="tabla-header">
+      <span class="tabla-titulo">Cargando tickets…</span>
+    </div>
+    <div class="skeleton-rows">
+      <div class="skeleton skeleton-row" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!cargando && tickets.length === 0" class="empty-state">
+    <svg class="empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+    </svg>
+    <h3>No tienes tickets aún</h3>
+    <p>Crea tu primera solicitud para comenzar a recibir soporte del equipo.</p>
+    <a routerLink="/dashboard/tickets/nuevo" class="btn-nuevo">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      Crear primer ticket
+    </a>
+  </div>
+
+  <!-- Tickets table -->
+  <div class="tabla-container" *ngIf="!cargando && tickets.length > 0">
+    <div class="tabla-header">
+      <span class="tabla-titulo">Lista de tickets</span>
+      <span class="tabla-count">{{ tickets.length }} {{ tickets.length === 1 ? 'ticket' : 'tickets' }}</span>
+    </div>
+    <div class="tabla-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Título</th>
+            <th>Estado</th>
+            <th>Prioridad</th>
+            <th>Fecha</th>
+            <th class="th-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ticket of tickets; let i = index" [style.animation-delay.ms]="i * 40">
+            <td><span class="id-pill">#{{ ticket.id }}</span></td>
+            <td class="td-titulo">{{ ticket.titulo }}</td>
+            <td><span class="badge" [ngClass]="getBadgeClass(ticket.estado)"><span class="badge-dot"></span>{{ ticket.estado }}</span></td>
+            <td><span class="prioridad" [ngClass]="getPrioridadClass(ticket.prioridad)">{{ ticket.prioridad }}</span></td>
+            <td class="td-fecha">{{ ticket.fecha_creacion | date:'dd/MM/yyyy' }}</td>
+            <td class="td-right">
+              <a [routerLink]="['/dashboard/tickets', ticket.id]" class="btn-ver">
+                Ver
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,49 @@
+# Entorno
+.env
+**/.env
+venv/
+env/
+
+# Python (Backend)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.env.local
+.env.development.local
+.env.production.local
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+
+# Angular
+/dist
+/tmp
+/out-tsc
+/bazel-out
+/node_modules
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# IDE 
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json

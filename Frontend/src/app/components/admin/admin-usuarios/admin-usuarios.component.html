@@ -1,0 +1,73 @@
+<div class="page">
+  <header class="page-header">
+    <div class="header-text">
+      <div class="eyebrow">
+        <span class="eyebrow-dot"></span>
+        Gestión de personas
+      </div>
+      <h1>Usuarios</h1>
+      <p class="subtitle">Lista de todos los usuarios registrados en el sistema</p>
+    </div>
+  </header>
+
+  <!-- Loading skeleton -->
+  <div *ngIf="cargando" class="tabla-container">
+    <div class="skeleton-row" *ngFor="let i of [1,2,3,4]">
+      <div class="skeleton sk-id"></div>
+      <div class="skeleton sk-user"></div>
+      <div class="skeleton sk-email"></div>
+      <div class="skeleton sk-rol"></div>
+    </div>
+  </div>
+
+  <div class="tabla-container" *ngIf="!cargando">
+    <div class="tabla-header">
+      <span class="tabla-titulo">Lista de usuarios</span>
+      <span class="tabla-meta">{{ usuarios.length }} {{ usuarios.length === 1 ? 'usuario' : 'usuarios' }}</span>
+    </div>
+
+    <div class="tabla-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="th-id">#</th>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th class="th-rol">Rol</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of usuarios; let i = index" [style.animation-delay.ms]="i * 35">
+            <td><span class="id-pill">#{{ u.id }}</span></td>
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar-lg" [ngClass]="getRolAvatarClass(u.rol)">
+                  {{ u.email.charAt(0).toUpperCase() }}
+                </div>
+                <div class="user-text">
+                  <div class="user-name">{{ u.username }}</div>
+                  <div class="user-handle">@{{ u.username }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="email-cell">{{ u.email }}</td>
+            <td class="td-rol">
+              <span class="rol-pill" [ngClass]="getRolClass(u.rol)">
+                <span class="prio-dot"></span>
+                {{ u.rol }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="usuarios.length === 0">
+            <td colspan="4">
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="40" height="40"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                <p>Aún no hay usuarios registrados</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

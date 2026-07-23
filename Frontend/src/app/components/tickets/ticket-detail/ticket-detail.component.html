@@ -1,0 +1,336 @@
+<!-- Loading state -->
+<div *ngIf="cargando" class="page page-loading">
+  <div class="skeleton skeleton-back"></div>
+  <div class="skeleton skeleton-title"></div>
+  <div class="skeleton skeleton-card"></div>
+  <div class="skeleton skeleton-card"></div>
+</div>
+
+<div class="page" *ngIf="!cargando && ticket">
+  <a routerLink="/dashboard/tickets" class="back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+    Volver a tickets
+  </a>
+
+  <div class="ticket-grid">
+    <div class="columna-principal">
+
+      <!-- Ticket info -->
+      <article class="card card-ticket-info">
+        <div class="ticket-eyebrow">
+          <span class="id-pill">#{{ ticket.id }}</span>
+          <span class="estado-badge estado-{{ ticket.estado.toLowerCase() }}">
+            <span class="badge-dot"></span>{{ ticket.estado }}
+          </span>
+          <span class="prioridad" [ngClass]="getPrioridadClass(ticket.prioridad)">{{ ticket.prioridad }}</span>
+        </div>
+        <h1 class="ticket-titulo">{{ ticket.titulo }}</h1>
+        <p class="ticket-descripcion">{{ ticket.descripcion }}</p>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Fecha de creación</div>
+            <div class="meta-value">{{ ticket.fecha_creacion | date:'dd MMM yyyy · HH:mm' }}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Categoría</div>
+            <div class="meta-value">{{ ticket.categoria?.nombre || 'Sin categoría' }}</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Solicitante</div>
+            <div class="meta-value-user">
+              <span class="avatar-mini">{{ ticket.solicitante?.email?.charAt(0).toUpperCase() }}</span>
+              <span>{{ ticket.solicitante?.email }}</span>
+            </div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Agente asignado</div>
+            <div class="meta-value-user" *ngIf="ticket.agente_asignado">
+              <span class="avatar-mini avatar-agente">{{ ticket.agente_asignado.email?.charAt(0).toUpperCase() }}</span>
+              <span>{{ ticket.agente_asignado.email }}</span>
+            </div>
+            <div class="meta-value meta-unassigned" *ngIf="!ticket.agente_asignado">Sin asignar</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Timeline / Trazabilidad -->
+      <article class="card">
+        <header class="card-header">
+          <div class="card-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="card-title">Trazabilidad del ticket</h2>
+            <p class="card-subtitle">Historial completo de cambios de estado</p>
+          </div>
+        </header>
+
+        <div *ngIf="!ticket.historial?.length" class="card-empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <p>Sin cambios de estado registrados</p>
+        </div>
+
+        <div class="timeline" *ngIf="ticket.historial?.length">
+          <div class="timeline-item" *ngFor="let h of ticket.historial; let i = index" [style.animation-delay.ms]="i * 80">
+            <div class="timeline-icon">{{ i + 1 }}</div>
+            <div class="timeline-line" *ngIf="i < ticket.historial.length - 1"></div>
+            <div class="timeline-content">
+              <div class="timeline-estados">
+                <span class="estado-old">{{ h.estado_anterior }}</span>
+                <svg class="timeline-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+                <span class="estado-new">{{ h.estado_nuevo }}</span>
+              </div>
+              <div class="timeline-meta">
+                <span class="meta-chip">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  {{ h.cambiado_por?.email || 'Sistema' }}
+                </span>
+                <span class="meta-chip">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  {{ h.fecha_cambio | date:'dd/MM/yyyy HH:mm' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Comentarios -->
+      <article class="card">
+        <header class="card-header">
+          <div class="card-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="card-title">Comentarios</h2>
+            <p class="card-subtitle">{{ ticket.comentarios?.length || 0 }} {{ (ticket.comentarios?.length || 0) === 1 ? 'comentario' : 'comentarios' }}</p>
+          </div>
+        </header>
+
+        <div *ngIf="!ticket.comentarios?.length" class="card-empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <p>Sin comentarios aún. Inicia la conversación.</p>
+        </div>
+
+        <div class="comentarios-lista">
+          <div class="comentario" *ngFor="let c of ticket.comentarios; let i = index" [style.animation-delay.ms]="i * 50">
+            <div class="comentario-avatar">{{ c.autor?.email?.charAt(0).toUpperCase() }}</div>
+            <div class="comentario-body">
+              <div class="comentario-header">
+                <span class="comentario-autor">{{ c.autor?.email }}</span>
+                <span class="comentario-fecha">{{ c.fecha_publicacion | date:'dd MMM · HH:mm' }}</span>
+              </div>
+              <div class="comentario-texto">{{ c.contenido }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="nuevo-comentario">
+          <label class="form-label">Nuevo comentario</label>
+          <textarea [(ngModel)]="comentario" rows="3" placeholder="Escribe tu mensaje..."></textarea>
+          <button (click)="enviarComentario()" class="btn-primary" [disabled]="!comentario.trim()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            Enviar comentario
+          </button>
+        </div>
+      </article>
+
+      <!-- Evidencias -->
+      <article class="card">
+        <header class="card-header">
+          <div class="card-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="card-title">Evidencias</h2>
+            <p class="card-subtitle">{{ ticket.evidencias?.length || 0 }} {{ (ticket.evidencias?.length || 0) === 1 ? 'archivo adjunto' : 'archivos adjuntos' }}</p>
+          </div>
+        </header>
+
+        <div *ngIf="!ticket.evidencias?.length" class="card-empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+          <p>Sin evidencias adjuntas</p>
+        </div>
+
+        <div class="evidencia-lista" *ngIf="ticket.evidencias?.length">
+          <div class="evidencia-item" *ngFor="let e of ticket.evidencias; let i = index" [style.animation-delay.ms]="i * 60">
+            <div class="evidencia-icono" [attr.data-tipo]="getIconoArchivo(e.archivo)">
+              <!-- Generic file icon -->
+              <svg *ngIf="getIconoArchivo(e.archivo) === 'file'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <svg *ngIf="getIconoArchivo(e.archivo) === 'pdf'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><text x="7" y="18" font-size="6" font-family="monospace" fill="currentColor" stroke="none">PDF</text></svg>
+              <svg *ngIf="getIconoArchivo(e.archivo) === 'image'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <svg *ngIf="getIconoArchivo(e.archivo) === 'doc'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <svg *ngIf="getIconoArchivo(e.archivo) === 'sheet'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+              <svg *ngIf="getIconoArchivo(e.archivo) === 'zip'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg>
+              <svg *ngIf="getIconoArchivo(e.archivo) === 'video'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              <svg *ngIf="getIconoArchivo(e.archivo) === 'audio'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
+            <div class="evidencia-info">
+              <div class="evidencia-nombre">{{ e.archivo?.split('/').pop() }}</div>
+              <div class="evidencia-desc" *ngIf="e.descripcion">{{ e.descripcion }}</div>
+              <div class="evidencia-meta">{{ e.subido_por?.email }} · {{ e.fecha_subida | date:'dd MMM · HH:mm' }}</div>
+            </div>
+            <a [href]="e.archivo_url" target="_blank" class="btn-descargar">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Descargar
+            </a>
+          </div>
+        </div>
+
+        <!-- Subir evidencia (solo AGENTE o ADMIN) -->
+        <div class="subir-evidencia" *ngIf="rol === 'AGENTE' || rol === 'ADMIN'">
+          <div class="upload-divider">
+            <span>Subir nueva evidencia</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Archivo</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="fileInput" (change)="onArchivoSeleccionado($event)" class="file-input"/>
+              <label for="fileInput" class="file-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span>{{ archivoSeleccionado ? archivoSeleccionado.name : 'Seleccionar archivo...' }}</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descripción (opcional)</label>
+            <input type="text" [(ngModel)]="descripcionEvidencia" placeholder="Ej: Captura de pantalla de la solución"/>
+          </div>
+          <button (click)="subirEvidencia()" [disabled]="!archivoSeleccionado || subiendoEvidencia" class="btn-primary">
+            <svg *ngIf="!subiendoEvidencia" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <svg *ngIf="subiendoEvidencia" class="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            {{ subiendoEvidencia ? 'Subiendo...' : 'Subir evidencia' }}
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <!-- Columna lateral -->
+    <aside class="columna-lateral">
+      <article class="card sticky" *ngIf="rol === 'AGENTE' || rol === 'ADMIN'">
+        <header class="card-header">
+          <div class="card-icon card-icon-accent">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"/>
+              <polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="card-title">Cambiar estado</h2>
+          </div>
+        </header>
+        <div class="form-group">
+          <div class="select-wrap">
+            <select [(ngModel)]="nuevoEstado">
+              <option value="">Seleccionar estado</option>
+              <option *ngFor="let e of estados" [value]="e">{{ e }}</option>
+            </select>
+            <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <button (click)="cambiarEstado()" class="btn-primary" [disabled]="!nuevoEstado">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Actualizar estado
+        </button>
+      </article>
+
+      <article class="card">
+        <header class="card-header">
+          <div class="card-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="card-title">Resumen</h2>
+          </div>
+        </header>
+        <div class="resumen-grid">
+          <div class="resumen-item">
+            <span class="resumen-label">Cambios de estado</span>
+            <span class="resumen-valor">{{ ticket.historial?.length || 0 }}</span>
+          </div>
+          <div class="resumen-item">
+            <span class="resumen-label">Comentarios</span>
+            <span class="resumen-valor">{{ ticket.comentarios?.length || 0 }}</span>
+          </div>
+          <div class="resumen-item">
+            <span class="resumen-label">Evidencias</span>
+            <span class="resumen-valor">{{ ticket.evidencias?.length || 0 }}</span>
+          </div>
+          <div class="resumen-item">
+            <span class="resumen-label">Última actualización</span>
+            <span class="resumen-valor resumen-valor-sm">{{ ticket.fecha_actualizacion | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Toast messages -->
+      <div class="toast toast-success" *ngIf="mensaje">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        {{ mensaje }}
+      </div>
+      <div class="toast toast-error" *ngIf="error">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ error }}
+      </div>
+    </aside>
+  </div>
+</div>

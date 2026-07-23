@@ -1,0 +1,201 @@
+<div class="page">
+  <!-- ===== HEADER ===== -->
+  <header class="page-header">
+    <div class="header-text">
+      <div class="eyebrow">
+        <span class="eyebrow-dot"></span>
+        Centro de control
+      </div>
+      <h1>Todos los tickets</h1>
+      <p class="subtitle">Gestiona y asigna todas las solicitudes del sistema</p>
+    </div>
+
+    <div class="header-actions">
+      <div class="quick-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Buscar tickets..." [(ngModel)]="busqueda"/>
+        <kbd>⌘K</kbd>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== STATS ===== -->
+  <section class="stats-row">
+    <div class="stat-card stat-1">
+      <div class="stat-top">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="stat-trend"><span class="trend-arrow">↗</span> Total</div>
+      </div>
+      <div class="stat-numero">{{ tickets.length }}</div>
+      <div class="stat-label">Tickets en el sistema</div>
+      <div class="stat-bar"><div class="bar-fill" style="width: 100%"></div></div>
+    </div>
+
+    <div class="stat-card stat-2">
+      <div class="stat-top">
+        <div class="stat-icon ico-info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="stat-trend">Pendientes</div>
+      </div>
+      <div class="stat-numero">{{ tickets | ticketFilter:'ABIERTO' }}</div>
+      <div class="stat-label">Esperando atención</div>
+      <div class="stat-bar"><div class="bar-fill bar-info" [style.width.%]="getPercent('ABIERTO')"></div></div>
+    </div>
+
+    <div class="stat-card stat-3">
+      <div class="stat-top">
+        <div class="stat-icon ico-warn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </div>
+        <div class="stat-trend">Activos</div>
+      </div>
+      <div class="stat-numero">{{ tickets | ticketFilter:'EN_PROCESO' }}</div>
+      <div class="stat-label">En proceso ahora</div>
+      <div class="stat-bar"><div class="bar-fill bar-warn" [style.width.%]="getPercent('EN_PROCESO')"></div></div>
+    </div>
+
+    <div class="stat-card stat-4">
+      <div class="stat-top">
+        <div class="stat-icon ico-success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="stat-trend">Cerrados</div>
+      </div>
+      <div class="stat-numero">{{ tickets | ticketFilter:'RESUELTO' }}</div>
+      <div class="stat-label">Solicitudes resueltas</div>
+      <div class="stat-bar"><div class="bar-fill bar-success" [style.width.%]="getPercent('RESUELTO')"></div></div>
+    </div>
+  </section>
+
+  <!-- ===== FILTROS ===== -->
+  <div class="filtros">
+    <div class="filter-group">
+      <label>Estado</label>
+      <div class="select-wrap">
+        <select [(ngModel)]="filtroEstado">
+          <option value="">Todos los estados</option>
+          <option value="ABIERTO">Abierto</option>
+          <option value="EN_PROCESO">En proceso</option>
+          <option value="RESUELTO">Resuelto</option>
+          <option value="CERRADO">Cerrado</option>
+        </select>
+        <svg class="select-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>Prioridad</label>
+      <div class="select-wrap">
+        <select [(ngModel)]="filtroPrioridad">
+          <option value="">Todas las prioridades</option>
+          <option value="BAJA">Baja</option>
+          <option value="MEDIA">Media</option>
+          <option value="ALTA">Alta</option>
+          <option value="CRITICA">Crítica</option>
+        </select>
+        <svg class="select-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="filter-meta">
+      <span class="result-count">{{ ticketsFiltrados.length }} resultado{{ ticketsFiltrados.length === 1 ? '' : 's' }}</span>
+    </div>
+  </div>
+
+  <!-- ===== LOADING ===== -->
+  <div *ngIf="cargando" class="tabla-container">
+    <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
+      <div class="skeleton sk-cell sk-id"></div>
+      <div class="skeleton sk-cell sk-title"></div>
+      <div class="skeleton sk-cell sk-email"></div>
+      <div class="skeleton sk-cell sk-badge"></div>
+      <div class="skeleton sk-cell sk-badge"></div>
+      <div class="skeleton sk-cell sk-select"></div>
+    </div>
+  </div>
+
+  <!-- ===== TABLA ===== -->
+  <div class="tabla-container" *ngIf="!cargando">
+    <div class="tabla-header">
+      <span class="tabla-titulo">Lista de tickets</span>
+      <span class="tabla-meta">{{ ticketsFiltrados.length }} mostrados</span>
+    </div>
+
+    <div class="tabla-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="th-id">#</th>
+            <th>Título</th>
+            <th>Solicitante</th>
+            <th>Estado</th>
+            <th>Prioridad</th>
+            <th>Agente</th>
+            <th class="th-actions">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ticket of ticketsFiltrados; let i = index" [style.animation-delay.ms]="i * 40">
+            <td class="td-id">
+              <span class="id-pill">#{{ ticket.id }}</span>
+            </td>
+            <td class="titulo-cell">
+              <div class="title-text">{{ ticket.titulo }}</div>
+            </td>
+            <td class="email-cell">
+              <div class="user-mini">
+                <div class="mini-avatar">{{ (ticket.solicitante?.email || '?').charAt(0).toUpperCase() }}</div>
+                <span>{{ ticket.solicitante?.email }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="badge-select-wrap" [ngClass]="getBadgeClass(ticket.estado)">
+                <span class="badge-dot"></span>
+                <select class="badge-select" [(ngModel)]="ticket.estado"
+                  (change)="cambiarEstado(ticket, ticket.estado)">
+                  <option value="ABIERTO">ABIERTO</option>
+                  <option value="EN_PROCESO">EN PROCESO</option>
+                  <option value="RESUELTO">RESUELTO</option>
+                  <option value="CERRADO">CERRADO</option>
+                </select>
+              </div>
+            </td>
+            <td>
+              <span class="prioridad" [ngClass]="getPrioridadClass(ticket.prioridad)">
+                <span class="prio-dot"></span>
+                {{ ticket.prioridad }}
+              </span>
+            </td>
+            <td>
+              <div class="agent-select-wrap">
+                <select class="select-agente" (change)="asignarAgente(ticket, $any($event.target).value)">
+                  <option value="">— Sin asignar —</option>
+                  <option *ngFor="let u of usuarios" [value]="u.id"
+                    [selected]="ticket.agente_asignado?.id === u.id">
+                    {{ u.email }}
+                  </option>
+                </select>
+                <svg class="select-chev-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </td>
+            <td class="td-actions">
+              <a [routerLink]="['/admin/tickets', ticket.id]" class="btn-ver">
+                <span>Ver</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </a>
+            </td>
+          </tr>
+          <tr *ngIf="ticketsFiltrados.length === 0">
+            <td colspan="7">
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="40" height="40"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <p>No se encontraron tickets con esos filtros</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
